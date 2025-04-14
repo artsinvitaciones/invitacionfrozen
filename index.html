@@ -1,0 +1,212 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="theme-color" content="#000000" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+  <title>Intro Interactiva</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    html, body {
+      width: 100%;
+      height: 100%;
+      overflow: hidden;
+      background: black;
+      font-family: sans-serif;
+    }
+
+    video {
+      position: absolute;
+      top: 0; left: 0;
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+
+    #video1 {
+      z-index: 2;
+      cursor: pointer;
+      opacity: 1;
+      transition: opacity 1s ease;
+    }
+
+    #video2 {
+      z-index: 1;
+      opacity: 0;
+      transition: opacity 1s ease;
+    }
+
+    .buttons-container {
+      position: absolute;
+      bottom: 5px;
+      left: 0;
+      right: 0;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      gap: 15px;
+      opacity: 0;
+      visibility: hidden;
+      pointer-events: none;
+      transition: opacity 1s ease;
+      z-index: 3;
+      padding: 0 20px;
+      overflow-x: auto;
+    }
+
+    .buttons-container.enabled {
+      opacity: 1;
+      visibility: visible;
+      pointer-events: auto;
+    }
+
+    .button-wrapper {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      text-align: center;
+      flex-shrink: 0;
+    }
+
+    .button-img {
+      width: 60px;
+      cursor: pointer;
+      transition: opacity 0.3s ease;
+    }
+
+    .button-img:hover {
+      opacity: 0.8;
+    }
+
+    .inactive-link {
+      pointer-events: none;
+    }
+
+    #unsupported-browser {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: black;
+      z-index: 9999;
+      display: none;
+      justify-content: center;
+      align-items: center;
+    }
+
+    #unsupported-browser img {
+      max-width: 100%;
+      max-height: 100%;
+    }
+
+    @media (max-width: 480px) {
+      .button-img { width: 40px; }
+    }
+    @media (min-width: 481px) and (max-width: 768px) {
+      .button-img { width: 55px; }
+    }
+    @media (min-width: 769px) {
+      .button-img { width: 60px; }
+    }
+  </style>
+</head>
+<body oncontextmenu="return false">
+
+  <!-- Imagen de navegador no compatible -->
+  <div id="unsupported-browser">
+    <img src="assets/incompatible.png" alt="Navegador no compatible" />
+  </div>
+
+  <!-- Video principal -->
+  <video id="video1" playsinline muted preload="auto" controlsList="nodownload">
+    <source src="assets/video.mp4" type="video/mp4" />
+  </video>
+
+  <!-- Segundo video oculto al inicio -->
+  <video id="video2" playsinline muted loop preload="auto" controlsList="nodownload">
+    <source src="assets/video2.mp4" type="video/mp4" />
+  </video>
+
+  <!-- Audio de fondo -->
+  <audio id="audio" loop preload="auto">
+    <source src="assets/music.mp3" type="audio/mpeg" />
+  </audio>
+
+  <!-- Botones -->
+  <div class="buttons-container" id="buttons-container">
+    <div class="button-wrapper">
+      <a href="https://www.google.com/maps" target="_blank" class="inactive-link" tabindex="-1">
+        <img src="assets/salon.png" alt="Salón" class="button-img" />
+      </a>
+    </div>
+    <div class="button-wrapper">
+      <a href="https://wa.me/your-whatsapp-number" target="_blank" class="inactive-link" tabindex="-1">
+        <img src="assets/ceremonia.png" alt="Ceremonia" class="button-img" />
+      </a>
+    </div>
+  </div>
+
+  <script>
+    const video1 = document.getElementById("video1");
+    const video2 = document.getElementById("video2");
+    const audio = document.getElementById("audio");
+    const buttonsContainer = document.getElementById("buttons-container");
+    const allLinks = document.querySelectorAll(".buttons-container a");
+    const unsupported = document.getElementById("unsupported-browser");
+
+    const userAgent = navigator.userAgent.toLowerCase();
+    const isXiaomiBrowser = /miuibrowser|miui|miwebview/.test(userAgent);
+
+    if (isXiaomiBrowser) {
+      // Mostrar solo advertencia y ocultar el resto
+      unsupported.style.display = "flex";
+      video1.style.display = "none";
+      video2.style.display = "none";
+      audio.remove();
+      buttonsContainer.style.display = "none";
+    } else {
+      // Comportamiento normal
+      allLinks.forEach(link => {
+        link.setAttribute("tabindex", "-1");
+        link.style.pointerEvents = "none";
+        link.addEventListener("click", function (e) {
+          if (this.classList.contains("inactive-link")) {
+            e.preventDefault();
+          }
+        });
+      });
+
+      video1.addEventListener("click", () => {
+        video1.muted = false;
+        video1.play();
+        audio.play();
+      });
+
+      video1.addEventListener("ended", () => {
+        video2.currentTime = 0;
+        video2.play().then(() => {
+          video2.style.opacity = 1;
+          video1.style.opacity = 0;
+          setTimeout(() => {
+            video1.style.display = "none";
+            buttonsContainer.classList.add("enabled");
+            allLinks.forEach(link => {
+              link.classList.remove("inactive-link");
+              link.removeAttribute("tabindex");
+              link.style.pointerEvents = "auto";
+            });
+          }, 1000);
+        }).catch(err => {
+          console.error("Error al reproducir video2:", err);
+        });
+      });
+
+      document.addEventListener('contextmenu', e => e.preventDefault());
+    }
+  </script>
+
+</body>
+</html>
