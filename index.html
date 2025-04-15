@@ -208,11 +208,11 @@
       // Cuando termina el video0
       video0.addEventListener("ended", () => {
         video0.style.display = "none";
-        try {
-          video1.currentTime = 0.001;
-        } catch (e) {
-          console.warn("No se pudo forzar precarga en video1:", e);
-        }
+        video1.currentTime = 0;
+        video1.play().then(() => {
+          video1.pause();
+          video1.currentTime = 0;
+        });
       });
 
       video1.addEventListener("click", () => {
