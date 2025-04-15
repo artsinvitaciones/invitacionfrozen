@@ -111,27 +111,9 @@
     @media (min-width: 769px) {
       .button-img { width: 60px; }
     }
-
-    /* 🔄 PRELOADER */
-    #preloader {
-      position: fixed;
-      top: 0; left: 0;
-      width: 100%;
-      height: 100%;
-      background: black;
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      z-index: 100000;
-    }
   </style>
 </head>
 <body oncontextmenu="return false">
-
-  <!-- 🌐 Preloader -->
-  <div id="preloader">
-    <img src="assets/preloader.gif" alt="Cargando..." />
-  </div>
 
   <!-- Imagen de navegador no compatible -->
   <div id="unsupported-browser">
@@ -179,12 +161,14 @@
     const isXiaomiBrowser = /miuibrowser|miui|miwebview/.test(userAgent);
 
     if (isXiaomiBrowser) {
+      // Mostrar solo advertencia y ocultar el resto
       unsupported.style.display = "flex";
       video1.style.display = "none";
       video2.style.display = "none";
       audio.remove();
       buttonsContainer.style.display = "none";
     } else {
+      // Comportamiento normal
       allLinks.forEach(link => {
         link.setAttribute("tabindex", "-1");
         link.style.pointerEvents = "none";
@@ -222,16 +206,6 @@
 
       document.addEventListener('contextmenu', e => e.preventDefault());
     }
-
-    // 🔄 Ocultar preloader al cargar todo
-    window.addEventListener("load", () => {
-      const preloader = document.getElementById("preloader");
-      preloader.style.opacity = "0";
-      preloader.style.pointerEvents = "none";
-      setTimeout(() => {
-        preloader.remove();
-      }, 1000);
-    });
   </script>
 
 </body>
