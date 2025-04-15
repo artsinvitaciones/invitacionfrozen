@@ -22,22 +22,9 @@
       object-fit: cover;
     }
 
-    #video0 {
-      z-index: 3;
-    }
-
-    #video1 {
-      z-index: 2;
-      cursor: pointer;
-      opacity: 1;
-      transition: opacity 1s ease;
-    }
-
-    #video2 {
-      z-index: 1;
-      opacity: 0;
-      transition: opacity 1s ease;
-    }
+    #video0 { z-index: 3; }
+    #video1 { z-index: 2; cursor: pointer; transition: opacity 1s ease; }
+    #video2 { z-index: 1; opacity: 0; transition: opacity 1s ease; }
 
     .buttons-container {
       position: absolute;
@@ -77,28 +64,25 @@
       transition: opacity 0.3s ease;
     }
 
-    .button-img:hover {
-      opacity: 0.8;
-    }
+    .button-img:hover { opacity: 0.8; }
+    .inactive-link { pointer-events: none; }
 
-    .inactive-link {
-      pointer-events: none;
-    }
-
-    #click-overlay {
-      position: absolute;
-      z-index: 5;
-      top: 0; left: 0;
+    #unsupported-browser {
+      position: fixed;
+      top: 0;
+      left: 0;
       width: 100%;
       height: 100%;
-      background: rgba(0,0,0,0.5);
-      display: flex;
+      background: black;
+      z-index: 9999;
+      display: none;
       justify-content: center;
       align-items: center;
-      color: white;
-      font-size: 1.5rem;
-      cursor: pointer;
-      display: none;
+    }
+
+    #unsupported-browser img {
+      max-width: 100%;
+      max-height: 100%;
     }
 
     @media (max-width: 480px) {
@@ -107,21 +91,29 @@
     @media (min-width: 481px) and (max-width: 768px) {
       .button-img { width: 55px; }
     }
+    @media (min-width: 769px) {
+      .button-img { width: 60px; }
+    }
   </style>
 </head>
 <body oncontextmenu="return false">
 
-  <!-- Video de preloader visual -->
-  <video id="video0" playsinline muted autoplay preload="auto">
+  <!-- Navegador no compatible -->
+  <div id="unsupported-browser">
+    <img src="assets/incompatible.png" alt="Navegador no compatible" />
+  </div>
+
+  <!-- Intro (video0) -->
+  <video id="video0" autoplay playsinline muted preload="auto" controlsList="nodownload">
     <source src="assets/video0.mp4" type="video/mp4" />
   </video>
 
-  <!-- Video principal (interactivo) -->
+  <!-- Video principal -->
   <video id="video1" playsinline muted preload="auto" controlsList="nodownload">
-    <source src="assets/video1.mp4" type="video/mp4" />
+    <source src="assets/video.mp4" type="video/mp4" />
   </video>
 
-  <!-- Video de fondo en loop -->
+  <!-- Fondo animado -->
   <video id="video2" playsinline muted loop preload="auto" controlsList="nodownload">
     <source src="assets/video2.mp4" type="video/mp4" />
   </video>
@@ -145,9 +137,6 @@
     </div>
   </div>
 
-  <!-- Overlay de "haz clic para comenzar" -->
-  <div id="click-overlay">Haz clic para comenzar</div>
-
   <script>
     const video0 = document.getElementById("video0");
     const video1 = document.getElementById("video1");
@@ -155,56 +144,66 @@
     const audio = document.getElementById("audio");
     const buttonsContainer = document.getElementById("buttons-container");
     const allLinks = document.querySelectorAll(".buttons-container a");
-    const clickOverlay = document.getElementById("click-overlay");
+    const unsupported = document.getElementById("unsupported-browser");
 
-    // Bloqueo de contexto
-    document.addEventListener('contextmenu', e => e.preventDefault());
+    const userAgent = navigator.userAgent.toLowerCase();
+    const isXiaomiBrowser = /miuibrowser|miui|miwebview/.test(userAgent);
 
-    // Inhabilitar los botones inicialmente
-    allLinks.forEach(link => {
-      link.setAttribute("tabindex", "-1");
-      link.classList.add("inactive-link");
-    });
-
-    // Comienza a reproducir video1 en segundo plano (muted)
-    video1.play().catch(() => {});
-
-    // Cuando termina video0
-    video0.addEventListener("ended", () => {
+    if (isXiaomiBrowser) {
+      unsupported.style.display = "flex";
       video0.style.display = "none";
+      video1.style.display = "none";
+      video2.style.display = "none";
+      audio.remove();
+      buttonsContainer.style.display = "none";
+    } else {
+      video1.load();
+      video2.load();
 
-      // Pausa y reinicia video1
-      video1.pause();
-      video1.currentTime = 0;
-
-      // Muestra overlay para pedir clic
-      clickOverlay.style.display = "flex";
-    });
-
-    // Cuando el usuario da clic en overlay
-    clickOverlay.addEventListener("click", () => {
-      clickOverlay.style.display = "none";
-      video1.muted = false;
-      video1.play();
-      audio.play();
-    });
-
-    // Cuando termina video1
-    video1.addEventListener("ended", () => {
-      video2.currentTime = 0;
-      video2.play().then(() => {
-        video2.style.opacity = 1;
-        video1.style.opacity = 0;
-        setTimeout(() => {
-          video1.style.display = "none";
-          buttonsContainer.classList.add("enabled");
-          allLinks.forEach(link => {
-            link.classList.remove("inactive-link");
-            link.removeAttribute("tabindex");
-          });
-        }, 1000);
+      allLinks.forEach(link => {
+        link.setAttribute("tabindex", "-1");
+        link.style.pointerEvents = "none";
+        link.addEventListener("click", function (e) {
+          if (this.classList.contains("inactive-link")) e.preventDefault();
+        });
       });
-    });
+
+      // Cuando termina el video0
+      video0.addEventListener("ended", () => {
+        video0.style.display = "none";
+        video1.currentTime = 0;
+        video1.play().then(() => {
+          video1.pause();
+          video1.currentTime = 0;
+        });
+      });
+
+      video1.addEventListener("click", () => {
+        video1.muted = false;
+        video1.play();
+        audio.play();
+      });
+
+      video1.addEventListener("ended", () => {
+        video2.currentTime = 0;
+        video2.play().then(() => {
+          video2.style.opacity = 1;
+          video1.style.opacity = 0;
+          setTimeout(() => {
+            video1.style.display = "none";
+            buttonsContainer.classList.add("enabled");
+            allLinks.forEach(link => {
+              link.classList.remove("inactive-link");
+              link.removeAttribute("tabindex");
+              link.style.pointerEvents = "auto";
+            });
+          }, 1000);
+        }).catch(err => console.error("Error al reproducir video2:", err));
+      });
+
+      document.addEventListener('contextmenu', e => e.preventDefault());
+    }
   </script>
+
 </body>
 </html>
