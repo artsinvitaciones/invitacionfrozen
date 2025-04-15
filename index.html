@@ -85,6 +85,24 @@
       max-height: 100%;
     }
 
+    #start-fallback {
+      position: absolute;
+      top: 0;
+      left: 0;
+      z-index: 10000;
+      width: 100%;
+      height: 100%;
+      background: rgba(0,0,0,0.85);
+      color: white;
+      font-size: 20px;
+      display: none;
+      justify-content: center;
+      align-items: center;
+      cursor: pointer;
+      text-align: center;
+      padding: 20px;
+    }
+
     @media (max-width: 480px) {
       .button-img { width: 40px; }
     }
@@ -102,6 +120,9 @@
   <div id="unsupported-browser">
     <img src="assets/incompatible.png" alt="Navegador no compatible" />
   </div>
+
+  <!-- Fallback para autoplay bloqueado -->
+  <div id="start-fallback">Toca para comenzar</div>
 
   <!-- Intro (video0) -->
   <video id="video0" autoplay playsinline muted preload="auto" controlsList="nodownload">
@@ -145,10 +166,10 @@
     const buttonsContainer = document.getElementById("buttons-container");
     const allLinks = document.querySelectorAll(".buttons-container a");
     const unsupported = document.getElementById("unsupported-browser");
+    const fallback = document.getElementById("start-fallback");
 
     const userAgent = navigator.userAgent.toLowerCase();
     const isXiaomiBrowser = /miuibrowser|miui|miwebview/.test(userAgent);
-    const isOpera = !!window.opera || userAgent.includes("opr/");
 
     if (isXiaomiBrowser) {
       unsupported.style.display = "flex";
@@ -169,27 +190,20 @@
         });
       });
 
-      // Ajustes específicos para Opera
-      if (isOpera) {
-        console.log("Opera detectado — aplicando ajustes para autoplay");
-        video0.muted = true;
-        video0.autoplay = true;
-
-        window.addEventListener("load", () => {
-          video0.play().catch(err => {
-            console.warn("Autoplay bloqueado en Opera:", err);
-            const desbloquearAutoplay = () => {
-              video0.play().then(() => {
-                console.log("Video0 desbloqueado tras clic del usuario");
-              }).catch(err => {
-                console.error("No se pudo reproducir ni tras el clic:", err);
-              });
-              document.body.removeEventListener("click", desbloquearAutoplay);
-            };
-            document.body.addEventListener("click", desbloquearAutoplay);
+      // Intentar reproducir video0 al cargar
+      window.addEventListener("load", () => {
+        video0.play().catch(err => {
+          console.warn("Autoplay bloqueado:", err);
+          fallback.style.display = "flex";
+          fallback.addEventListener("click", () => {
+            video0.play().then(() => {
+              fallback.style.display = "none";
+            }).catch(err => {
+              console.error("No se pudo reproducir tras clic en fallback:", err);
+            });
           });
         });
-      }
+      });
 
       // Cuando termina el video0
       video0.addEventListener("ended", () => {
