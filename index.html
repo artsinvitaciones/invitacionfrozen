@@ -30,6 +30,7 @@
       cursor: pointer;
       opacity: 1;
       transition: opacity 1s ease;
+      visibility: hidden;
     }
 
     #video2 {
@@ -102,6 +103,19 @@
       max-height: 100%;
     }
 
+    #loader {
+      position: fixed;
+      top: 0; left: 0;
+      width: 100%; height: 100%;
+      background: black;
+      z-index: 999;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      color: white;
+      font-size: 1.5rem;
+    }
+
     @media (max-width: 480px) {
       .button-img { width: 40px; }
     }
@@ -113,9 +127,13 @@
     }
   </style>
 </head>
+
 <body oncontextmenu="return false">
 
-  <!-- Imagen de navegador no compatible -->
+  <!-- Pantalla de carga -->
+  <div id="loader">Cargando...</div>
+
+  <!-- Advertencia de navegador no compatible -->
   <div id="unsupported-browser">
     <img src="assets/incompatible.png" alt="Navegador no compatible" />
   </div>
@@ -125,12 +143,12 @@
     <source src="assets/video.mp4" type="video/mp4" />
   </video>
 
-  <!-- Segundo video oculto al inicio -->
+  <!-- Segundo video -->
   <video id="video2" playsinline muted loop preload="auto" controlsList="nodownload">
     <source src="assets/video2.mp4" type="video/mp4" />
   </video>
 
-  <!-- Audio de fondo -->
+  <!-- Audio -->
   <audio id="audio" loop preload="auto">
     <source src="assets/music.mp3" type="audio/mpeg" />
   </audio>
@@ -156,19 +174,42 @@
     const buttonsContainer = document.getElementById("buttons-container");
     const allLinks = document.querySelectorAll(".buttons-container a");
     const unsupported = document.getElementById("unsupported-browser");
+    const loader = document.getElementById("loader");
 
     const userAgent = navigator.userAgent.toLowerCase();
     const isXiaomiBrowser = /miuibrowser|miui|miwebview/.test(userAgent);
 
     if (isXiaomiBrowser) {
-      // Mostrar solo advertencia y ocultar el resto
       unsupported.style.display = "flex";
       video1.style.display = "none";
       video2.style.display = "none";
       audio.remove();
       buttonsContainer.style.display = "none";
+      loader.remove();
     } else {
-      // Comportamiento normal
+      // Ocultar el video1 mientras se prepara
+      const prepareVideo = () => {
+        if ('decode' in video1) {
+          video1.decode().then(() => {
+            video1.style.visibility = "visible";
+            loader.style.display = "none";
+          }).catch(() => {
+            videoFallback();
+          });
+        } else {
+          videoFallback();
+        }
+      };
+
+      const videoFallback = () => {
+        video1.addEventListener("canplaythrough", () => {
+          video1.style.visibility = "visible";
+          loader.style.display = "none";
+        });
+      };
+
+      prepareVideo();
+
       allLinks.forEach(link => {
         link.setAttribute("tabindex", "-1");
         link.style.pointerEvents = "none";
