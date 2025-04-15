@@ -17,6 +17,24 @@
       font-family: sans-serif;
     }
 
+    /* Preloader con video */
+    #preloader {
+      position: fixed;
+      top: 0; left: 0;
+      width: 100%;
+      height: 100%;
+      background: black;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      z-index: 100000;
+    }
+
+    #preloader video {
+      max-width: 150px;
+      max-height: 150px;
+    }
+
     video {
       position: absolute;
       top: 0; left: 0;
@@ -104,6 +122,10 @@
 
     @media (max-width: 480px) {
       .button-img { width: 40px; }
+      #preloader video {
+        max-width: 100px;
+        max-height: 100px;
+      }
     }
     @media (min-width: 481px) and (max-width: 768px) {
       .button-img { width: 55px; }
@@ -114,6 +136,13 @@
   </style>
 </head>
 <body oncontextmenu="return false">
+
+  <!-- Preloader con video -->
+  <div id="preloader">
+    <video autoplay muted loop playsinline>
+      <source src="assets/preloader.mp4" type="video/mp4" />
+    </video>
+  </div>
 
   <!-- Imagen de navegador no compatible -->
   <div id="unsupported-browser">
@@ -156,19 +185,23 @@
     const buttonsContainer = document.getElementById("buttons-container");
     const allLinks = document.querySelectorAll(".buttons-container a");
     const unsupported = document.getElementById("unsupported-browser");
+    const preloader = document.getElementById("preloader");
 
     const userAgent = navigator.userAgent.toLowerCase();
     const isXiaomiBrowser = /miuibrowser|miui|miwebview/.test(userAgent);
 
+    // Ocultar preloader cuando todo haya cargado
+    window.addEventListener("load", () => {
+      preloader.style.display = "none";
+    });
+
     if (isXiaomiBrowser) {
-      // Mostrar solo advertencia y ocultar el resto
       unsupported.style.display = "flex";
       video1.style.display = "none";
       video2.style.display = "none";
       audio.remove();
       buttonsContainer.style.display = "none";
     } else {
-      // Comportamiento normal
       allLinks.forEach(link => {
         link.setAttribute("tabindex", "-1");
         link.style.pointerEvents = "none";
