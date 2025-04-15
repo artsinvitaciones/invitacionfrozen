@@ -190,7 +190,6 @@
         });
       });
 
-      // Fallback para navegadores con autoplay bloqueado
       window.addEventListener("load", () => {
         video0.play().catch(err => {
           console.warn("Autoplay bloqueado:", err);
@@ -205,19 +204,9 @@
         });
       });
 
-      // Cuando termina el video0
+      // ✅ Aquí solo ocultamos video0, no tocamos video1 aún
       video0.addEventListener("ended", () => {
         video0.style.display = "none";
-
-        // ⚡ Preload "truco": reproducir brevemente y volver al inicio
-        video1.play().then(() => {
-          setTimeout(() => {
-            video1.pause();
-            video1.currentTime = 0.001; // Evita bugs en algunos navegadores
-          }, 200); // Solo 200ms para cargar en memoria
-        }).catch(err => {
-          console.warn("Error al intentar precargar video1:", err);
-        });
       });
 
       video1.addEventListener("click", () => {
