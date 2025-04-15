@@ -187,25 +187,31 @@
       buttonsContainer.style.display = "none";
       loader.remove();
     } else {
-      // Ocultar el video1 mientras se prepara
       const prepareVideo = () => {
-        if ('decode' in video1) {
-          video1.decode().then(() => {
-            video1.style.visibility = "visible";
-            loader.style.display = "none";
-          }).catch(() => {
-            videoFallback();
-          });
-        } else {
-          videoFallback();
-        }
-      };
+        let ready = false;
 
-      const videoFallback = () => {
-        video1.addEventListener("canplaythrough", () => {
+        const showVideo = () => {
+          if (ready) return;
+          ready = true;
           video1.style.visibility = "visible";
           loader.style.display = "none";
-        });
+        };
+
+        if ('decode' in video1) {
+          video1.decode().then(showVideo).catch((err) => {
+            console.warn("decode falló, esperando canplaythrough:", err);
+          });
+        }
+
+        video1.addEventListener("canplaythrough", showVideo, { once: true });
+
+        // Fallback después de 6 segundos
+        setTimeout(() => {
+          if (!ready) {
+            console.warn("Fallback por tiempo: mostrando video tras 6s");
+            showVideo();
+          }
+        }, 6000);
       };
 
       prepareVideo();
