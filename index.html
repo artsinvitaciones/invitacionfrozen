@@ -30,7 +30,6 @@
       cursor: pointer;
       opacity: 1;
       transition: opacity 1s ease;
-      visibility: hidden;
     }
 
     #video2 {
@@ -103,19 +102,6 @@
       max-height: 100%;
     }
 
-    #loader {
-      position: fixed;
-      top: 0; left: 0;
-      width: 100%; height: 100%;
-      background: black;
-      z-index: 999;
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      color: white;
-      font-size: 1.5rem;
-    }
-
     @media (max-width: 480px) {
       .button-img { width: 40px; }
     }
@@ -127,13 +113,9 @@
     }
   </style>
 </head>
-
 <body oncontextmenu="return false">
 
-  <!-- Pantalla de carga -->
-  <div id="loader">Cargando...</div>
-
-  <!-- Advertencia de navegador no compatible -->
+  <!-- Imagen de navegador no compatible -->
   <div id="unsupported-browser">
     <img src="assets/incompatible.png" alt="Navegador no compatible" />
   </div>
@@ -143,12 +125,12 @@
     <source src="assets/video.mp4" type="video/mp4" />
   </video>
 
-  <!-- Segundo video -->
+  <!-- Segundo video oculto al inicio -->
   <video id="video2" playsinline muted loop preload="auto" controlsList="nodownload">
     <source src="assets/video2.mp4" type="video/mp4" />
   </video>
 
-  <!-- Audio -->
+  <!-- Audio de fondo -->
   <audio id="audio" loop preload="auto">
     <source src="assets/music.mp3" type="audio/mpeg" />
   </audio>
@@ -174,48 +156,22 @@
     const buttonsContainer = document.getElementById("buttons-container");
     const allLinks = document.querySelectorAll(".buttons-container a");
     const unsupported = document.getElementById("unsupported-browser");
-    const loader = document.getElementById("loader");
 
     const userAgent = navigator.userAgent.toLowerCase();
     const isXiaomiBrowser = /miuibrowser|miui|miwebview/.test(userAgent);
 
     if (isXiaomiBrowser) {
+      // Mostrar solo advertencia y ocultar el resto
       unsupported.style.display = "flex";
       video1.style.display = "none";
       video2.style.display = "none";
       audio.remove();
       buttonsContainer.style.display = "none";
-      loader.remove();
     } else {
-      const prepareVideo = () => {
-        let ready = false;
+      // Cargar el video sin el decode() y usar load() en su lugar
+      video1.load();
 
-        const showVideo = () => {
-          if (ready) return;
-          ready = true;
-          video1.style.visibility = "visible";
-          loader.style.display = "none";
-        };
-
-        if ('decode' in video1) {
-          video1.decode().then(showVideo).catch((err) => {
-            console.warn("decode falló, esperando canplaythrough:", err);
-          });
-        }
-
-        video1.addEventListener("canplaythrough", showVideo, { once: true });
-
-        // Fallback después de 6 segundos
-        setTimeout(() => {
-          if (!ready) {
-            console.warn("Fallback por tiempo: mostrando video tras 6s");
-            showVideo();
-          }
-        }, 6000);
-      };
-
-      prepareVideo();
-
+      // Comportamiento normal
       allLinks.forEach(link => {
         link.setAttribute("tabindex", "-1");
         link.style.pointerEvents = "none";
