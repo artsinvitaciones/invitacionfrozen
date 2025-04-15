@@ -85,29 +85,22 @@
       max-height: 100%;
     }
 
-    #manual-play-overlay {
-      position: fixed;
-      top: 0; left: 0;
+    #start-fallback {
+      position: absolute;
+      top: 0;
+      left: 0;
+      z-index: 10000;
       width: 100%;
       height: 100%;
-      background: rgba(0, 0, 0, 0.85);
+      background: rgba(0,0,0,0.85);
       color: white;
-      font-size: 22px;
-      font-weight: 300;
+      font-size: 20px;
       display: none;
       justify-content: center;
       align-items: center;
-      text-align: center;
-      z-index: 999;
       cursor: pointer;
+      text-align: center;
       padding: 20px;
-    }
-
-    #manual-play-overlay span {
-      background: rgba(255, 255, 255, 0.1);
-      padding: 20px 30px;
-      border-radius: 8px;
-      backdrop-filter: blur(4px);
     }
 
     @media (max-width: 480px) {
@@ -128,10 +121,8 @@
     <img src="assets/incompatible.png" alt="Navegador no compatible" />
   </div>
 
-  <!-- Overlay elegante para reproducir -->
-  <div id="manual-play-overlay">
-    <span>Haz clic para comenzar la experiencia</span>
-  </div>
+  <!-- Fallback para autoplay bloqueado -->
+  <div id="start-fallback">Toca para comenzar</div>
 
   <!-- Intro (video0) -->
   <video id="video0" autoplay playsinline muted preload="auto" controlsList="nodownload">
@@ -175,11 +166,10 @@
     const buttonsContainer = document.getElementById("buttons-container");
     const allLinks = document.querySelectorAll(".buttons-container a");
     const unsupported = document.getElementById("unsupported-browser");
-    const overlay = document.getElementById("manual-play-overlay");
+    const fallback = document.getElementById("start-fallback");
 
     const userAgent = navigator.userAgent.toLowerCase();
     const isXiaomiBrowser = /miuibrowser|miui|miwebview/.test(userAgent);
-    const isOpera = userAgent.includes("opera") || userAgent.includes("opr");
 
     if (isXiaomiBrowser) {
       unsupported.style.display = "flex";
@@ -200,17 +190,22 @@
         });
       });
 
-      if (isOpera) {
-        setTimeout(() => {
-          overlay.style.display = "flex";
-        }, 6000);
-
-        overlay.addEventListener("click", () => {
-          video0.play();
-          overlay.style.display = "none";
+      // Intentar reproducir video0 al cargar
+      window.addEventListener("load", () => {
+        video0.play().catch(err => {
+          console.warn("Autoplay bloqueado:", err);
+          fallback.style.display = "flex";
+          fallback.addEventListener("click", () => {
+            video0.play().then(() => {
+              fallback.style.display = "none";
+            }).catch(err => {
+              console.error("No se pudo reproducir tras clic en fallback:", err);
+            });
+          });
         });
-      }
+      });
 
+      // Cuando termina el video0
       video0.addEventListener("ended", () => {
         video0.style.display = "none";
         try {
@@ -221,6 +216,7 @@
       });
 
       video1.addEventListener("click", () => {
+        video1.muted = false;
         video1.play();
         audio.play();
       });
