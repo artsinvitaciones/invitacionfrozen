@@ -161,17 +161,18 @@
     const isXiaomiBrowser = /miuibrowser|miui|miwebview/.test(userAgent);
 
     if (isXiaomiBrowser) {
-      // Mostrar solo advertencia y ocultar el resto
       unsupported.style.display = "flex";
       video1.style.display = "none";
       video2.style.display = "none";
       audio.remove();
       buttonsContainer.style.display = "none";
     } else {
-      // Cargar el video sin el decode() y usar load() en su lugar
-      video1.load();
+      // Precarga inicial
+      window.addEventListener("load", () => {
+        video1.load();
+      });
 
-      // Comportamiento normal
+      // Bloquear todos los enlaces hasta que termine el video1
       allLinks.forEach(link => {
         link.setAttribute("tabindex", "-1");
         link.style.pointerEvents = "none";
@@ -182,17 +183,23 @@
         });
       });
 
-      video1.addEventListener("click", () => {
-        video1.muted = false;
-        video1.play();
-        audio.play();
+      // Al hacer clic en el video1, lo reproducimos junto con la música
+      video1.addEventListener("click", async () => {
+        try {
+          await video1.play(); // se puede reproducir sin problema al estar muted
+          await audio.play();
+        } catch (err) {
+          console.error("Error al iniciar video o audio:", err);
+        }
       });
 
+      // Cuando termina video1, se cambia al video2 + se activan los botones
       video1.addEventListener("ended", () => {
         video2.currentTime = 0;
         video2.play().then(() => {
           video2.style.opacity = 1;
           video1.style.opacity = 0;
+
           setTimeout(() => {
             video1.style.display = "none";
             buttonsContainer.classList.add("enabled");
@@ -207,6 +214,7 @@
         });
       });
 
+      // Bloqueo de menú contextual
       document.addEventListener('contextmenu', e => e.preventDefault());
     }
   </script>
