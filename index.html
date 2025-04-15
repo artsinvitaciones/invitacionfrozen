@@ -160,13 +160,6 @@
       video1.load();
       video2.load();
 
-      // Refuerzo de autoplay: esperar un momento y luego intentar reproducir video0
-      setTimeout(() => {
-        video0.play().catch(err => {
-          console.warn("Opera u otro navegador bloqueó autoplay de video0:", err);
-        });
-      }, 300); // Espera 300 milisegundos
-
       allLinks.forEach(link => {
         link.setAttribute("tabindex", "-1");
         link.style.pointerEvents = "none";
