@@ -86,21 +86,24 @@
     }
 
     #start-fallback {
-      position: absolute;
-      top: 0;
-      left: 0;
-      z-index: 10000;
+      position: fixed;
+      top: 0; left: 0;
       width: 100%;
       height: 100%;
-      background: rgba(0,0,0,0.85);
-      color: white;
-      font-size: 20px;
+      background: rgba(0,0,0,0.9);
+      z-index: 9998;
       display: none;
       justify-content: center;
       align-items: center;
+    }
+
+    #start-fallback button {
+      padding: 12px 24px;
+      font-size: 1.2rem;
+      background: white;
+      border: none;
+      border-radius: 8px;
       cursor: pointer;
-      text-align: center;
-      padding: 20px;
     }
 
     @media (max-width: 480px) {
@@ -121,8 +124,10 @@
     <img src="assets/incompatible.png" alt="Navegador no compatible" />
   </div>
 
-  <!-- Fallback para autoplay bloqueado -->
-  <div id="start-fallback">Toca para comenzar</div>
+  <!-- Botón de respaldo para iniciar video0 manualmente -->
+  <div id="start-fallback">
+    <button id="start-button">Iniciar</button>
+  </div>
 
   <!-- Intro (video0) -->
   <video id="video0" autoplay playsinline muted preload="auto" controlsList="nodownload">
@@ -167,6 +172,7 @@
     const allLinks = document.querySelectorAll(".buttons-container a");
     const unsupported = document.getElementById("unsupported-browser");
     const fallback = document.getElementById("start-fallback");
+    const startButton = document.getElementById("start-button");
 
     const userAgent = navigator.userAgent.toLowerCase();
     const isXiaomiBrowser = /miuibrowser|miui|miwebview/.test(userAgent);
@@ -190,22 +196,18 @@
         });
       });
 
-      // Intentar reproducir video0 al cargar
-      window.addEventListener("load", () => {
-        video0.play().catch(err => {
-          console.warn("Autoplay bloqueado:", err);
-          fallback.style.display = "flex";
-          fallback.addEventListener("click", () => {
-            video0.play().then(() => {
-              fallback.style.display = "none";
-            }).catch(err => {
-              console.error("No se pudo reproducir tras clic en fallback:", err);
-            });
-          });
-        });
+      // Intentar reproducir video0 automáticamente
+      video0.play().catch(err => {
+        fallback.style.display = "flex";
       });
 
-      // Cuando termina el video0
+      // Botón de respaldo para iniciar video0 si autoplay falla
+      startButton.addEventListener("click", () => {
+        fallback.style.display = "none";
+        video0.play();
+      });
+
+      // Cuando termina video0
       video0.addEventListener("ended", () => {
         video0.style.display = "none";
         video1.currentTime = 0;
@@ -215,12 +217,13 @@
         });
       });
 
+      // Al hacer clic en video1
       video1.addEventListener("click", () => {
-        video1.muted = false;
         video1.play();
         audio.play();
       });
 
+      // Cuando termina video1
       video1.addEventListener("ended", () => {
         video2.currentTime = 0;
         video2.play().then(() => {
