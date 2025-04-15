@@ -161,12 +161,14 @@
     const isXiaomiBrowser = /miuibrowser|miui|miwebview/.test(userAgent);
 
     if (isXiaomiBrowser) {
+      // Mostrar solo advertencia y ocultar el resto
       unsupported.style.display = "flex";
       video1.style.display = "none";
       video2.style.display = "none";
       audio.remove();
       buttonsContainer.style.display = "none";
     } else {
+      // Comportamiento normal
       allLinks.forEach(link => {
         link.setAttribute("tabindex", "-1");
         link.style.pointerEvents = "none";
