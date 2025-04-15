@@ -3,9 +3,6 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <meta name="theme-color" content="#000000" />
-  <meta name="apple-mobile-web-app-capable" content="yes" />
-  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
   <title>Intro Interactiva</title>
   <style>
     * { margin: 0; padding: 0; box-sizing: border-box; }
@@ -25,18 +22,9 @@
       object-fit: cover;
     }
 
-    #video1 {
-      z-index: 2;
-      cursor: pointer;
-      opacity: 1;
-      transition: opacity 1s ease;
-    }
-
-    #video2 {
-      z-index: 1;
-      opacity: 0;
-      transition: opacity 1s ease;
-    }
+    #video0 { z-index: 3; }
+    #video1 { z-index: 2; cursor: pointer; transition: opacity 1s ease; }
+    #video2 { z-index: 1; opacity: 0; transition: opacity 1s ease; }
 
     .buttons-container {
       position: absolute;
@@ -51,7 +39,7 @@
       visibility: hidden;
       pointer-events: none;
       transition: opacity 1s ease;
-      z-index: 3;
+      z-index: 4;
       padding: 0 20px;
       overflow-x: auto;
     }
@@ -76,13 +64,8 @@
       transition: opacity 0.3s ease;
     }
 
-    .button-img:hover {
-      opacity: 0.8;
-    }
-
-    .inactive-link {
-      pointer-events: none;
-    }
+    .button-img:hover { opacity: 0.8; }
+    .inactive-link { pointer-events: none; }
 
     #unsupported-browser {
       position: fixed;
@@ -115,22 +98,27 @@
 </head>
 <body oncontextmenu="return false">
 
-  <!-- Imagen de navegador no compatible -->
+  <!-- Navegador no compatible -->
   <div id="unsupported-browser">
     <img src="assets/incompatible.png" alt="Navegador no compatible" />
   </div>
+
+  <!-- Intro (video0) -->
+  <video id="video0" autoplay playsinline muted preload="auto" controlsList="nodownload">
+    <source src="assets/video0.mp4" type="video/mp4" />
+  </video>
 
   <!-- Video principal -->
   <video id="video1" playsinline muted preload="auto" controlsList="nodownload">
     <source src="assets/video.mp4" type="video/mp4" />
   </video>
 
-  <!-- Segundo video oculto al inicio -->
+  <!-- Fondo animado -->
   <video id="video2" playsinline muted loop preload="auto" controlsList="nodownload">
     <source src="assets/video2.mp4" type="video/mp4" />
   </video>
 
-  <!-- Audio de fondo -->
+  <!-- Música de fondo -->
   <audio id="audio" loop preload="auto">
     <source src="assets/music.mp3" type="audio/mpeg" />
   </audio>
@@ -150,6 +138,7 @@
   </div>
 
   <script>
+    const video0 = document.getElementById("video0");
     const video1 = document.getElementById("video1");
     const video2 = document.getElementById("video2");
     const audio = document.getElementById("audio");
@@ -161,21 +150,31 @@
     const isXiaomiBrowser = /miuibrowser|miui|miwebview/.test(userAgent);
 
     if (isXiaomiBrowser) {
-      // Mostrar solo advertencia y ocultar el resto
       unsupported.style.display = "flex";
+      video0.style.display = "none";
       video1.style.display = "none";
       video2.style.display = "none";
       audio.remove();
       buttonsContainer.style.display = "none";
     } else {
-      // Comportamiento normal
+      video1.load();
+      video2.load();
+
       allLinks.forEach(link => {
         link.setAttribute("tabindex", "-1");
         link.style.pointerEvents = "none";
         link.addEventListener("click", function (e) {
-          if (this.classList.contains("inactive-link")) {
-            e.preventDefault();
-          }
+          if (this.classList.contains("inactive-link")) e.preventDefault();
+        });
+      });
+
+      // Cuando termina el video0
+      video0.addEventListener("ended", () => {
+        video0.style.display = "none";
+        video1.currentTime = 0;
+        video1.play().then(() => {
+          video1.pause();
+          video1.currentTime = 0;
         });
       });
 
@@ -199,9 +198,7 @@
               link.style.pointerEvents = "auto";
             });
           }, 1000);
-        }).catch(err => {
-          console.error("Error al reproducir video2:", err);
-        });
+        }).catch(err => console.error("Error al reproducir video2:", err));
       });
 
       document.addEventListener('contextmenu', e => e.preventDefault());
