@@ -95,19 +95,12 @@
       background: rgba(0,0,0,0.85);
       color: white;
       font-size: 20px;
-      display: flex;
+      display: none;
       justify-content: center;
       align-items: center;
       cursor: pointer;
       text-align: center;
       padding: 20px;
-      animation: pulse 2s infinite;
-    }
-
-    @keyframes pulse {
-      0% { opacity: 0.7; }
-      50% { opacity: 1; }
-      100% { opacity: 0.7; }
     }
 
     @media (max-width: 480px) {
@@ -198,28 +191,20 @@
       });
 
       window.addEventListener("load", () => {
-        // Mostrar el fallback desde el inicio
-        fallback.style.display = "flex";
-
-        const autoplayPromise = video0.play();
-
-        // Si autoplay funciona, ocultamos el mensaje
-        autoplayPromise.then(() => {
-          fallback.style.display = "none";
-        }).catch(err => {
+        video0.play().catch(err => {
           console.warn("Autoplay bloqueado:", err);
-        });
-
-        // Siempre permitimos desbloquear con clic
-        fallback.addEventListener("click", () => {
-          video0.play().then(() => {
-            fallback.style.display = "none";
-          }).catch(err => {
-            console.error("No se pudo reproducir tras clic en fallback:", err);
+          fallback.style.display = "flex";
+          fallback.addEventListener("click", () => {
+            video0.play().then(() => {
+              fallback.style.display = "none";
+            }).catch(err => {
+              console.error("No se pudo reproducir tras clic en fallback:", err);
+            });
           });
         });
       });
 
+      // ✅ Aquí solo ocultamos video0, no tocamos video1 aún
       video0.addEventListener("ended", () => {
         video0.style.display = "none";
       });
