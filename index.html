@@ -102,31 +102,6 @@
       max-height: 100%;
     }
 
-    /* Preloader */
-    #preloader {
-      position: fixed;
-      top: 0; left: 0;
-      width: 100%;
-      height: 100%;
-      background: black;
-      z-index: 9998;
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      transition: opacity 0.8s ease;
-    }
-
-    #preloader.hidden {
-      opacity: 0;
-      visibility: hidden;
-    }
-
-    #preloader video {
-      width: 100%;
-      height: 100%;
-      object-fit: cover;
-    }
-
     @media (max-width: 480px) {
       .button-img { width: 40px; }
     }
@@ -140,14 +115,7 @@
 </head>
 <body oncontextmenu="return false">
 
-  <!-- Preloader -->
-  <div id="preloader">
-    <video autoplay muted loop playsinline>
-      <source src="assets/preloader.mp4" type="video/mp4" />
-    </video>
-  </div>
-
-  <!-- Imagen navegador no compatible -->
+  <!-- Imagen de navegador no compatible -->
   <div id="unsupported-browser">
     <img src="assets/incompatible.png" alt="Navegador no compatible" />
   </div>
@@ -157,7 +125,7 @@
     <source src="assets/video.mp4" type="video/mp4" />
   </video>
 
-  <!-- Segundo video -->
+  <!-- Segundo video oculto al inicio -->
   <video id="video2" playsinline muted loop preload="auto" controlsList="nodownload">
     <source src="assets/video2.mp4" type="video/mp4" />
   </video>
@@ -188,7 +156,6 @@
     const buttonsContainer = document.getElementById("buttons-container");
     const allLinks = document.querySelectorAll(".buttons-container a");
     const unsupported = document.getElementById("unsupported-browser");
-    const preloader = document.getElementById("preloader");
 
     const userAgent = navigator.userAgent.toLowerCase();
     const isXiaomiBrowser = /miuibrowser|miui|miwebview/.test(userAgent);
@@ -199,7 +166,6 @@
       video2.style.display = "none";
       audio.remove();
       buttonsContainer.style.display = "none";
-      preloader.style.display = "none";
     } else {
       allLinks.forEach(link => {
         link.setAttribute("tabindex", "-1");
@@ -211,24 +177,8 @@
         });
       });
 
-      // Ocultar preloader si video ya puede reproducirse (usando caché)
-      video1.addEventListener("canplaythrough", () => {
-        hidePreloader();
-      });
-
-      // Backup: ocultar preloader a los 6 segundos
-      setTimeout(() => {
-        hidePreloader();
-      }, 6000);
-
-      function hidePreloader() {
-        if (!preloader.classList.contains("hidden")) {
-          preloader.classList.add("hidden");
-        }
-      }
-
-      // Reproducir video1 con clic del usuario
       video1.addEventListener("click", () => {
+        video1.muted = false;
         video1.play();
         audio.play();
       });
@@ -255,5 +205,6 @@
       document.addEventListener('contextmenu', e => e.preventDefault());
     }
   </script>
+
 </body>
 </html>
