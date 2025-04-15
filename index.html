@@ -85,24 +85,6 @@
       max-height: 100%;
     }
 
-    #start-fallback {
-      position: absolute;
-      top: 0;
-      left: 0;
-      z-index: 10000;
-      width: 100%;
-      height: 100%;
-      background: rgba(0,0,0,0.85);
-      color: white;
-      font-size: 20px;
-      display: none;
-      justify-content: center;
-      align-items: center;
-      cursor: pointer;
-      text-align: center;
-      padding: 20px;
-    }
-
     @media (max-width: 480px) {
       .button-img { width: 40px; }
     }
@@ -120,9 +102,6 @@
   <div id="unsupported-browser">
     <img src="assets/incompatible.png" alt="Navegador no compatible" />
   </div>
-
-  <!-- Fallback para autoplay bloqueado -->
-  <div id="start-fallback">Toca para comenzar</div>
 
   <!-- Intro (video0) -->
   <video id="video0" autoplay playsinline muted preload="auto" controlsList="nodownload">
@@ -166,7 +145,6 @@
     const buttonsContainer = document.getElementById("buttons-container");
     const allLinks = document.querySelectorAll(".buttons-container a");
     const unsupported = document.getElementById("unsupported-browser");
-    const fallback = document.getElementById("start-fallback");
 
     const userAgent = navigator.userAgent.toLowerCase();
     const isXiaomiBrowser = /miuibrowser|miui|miwebview/.test(userAgent);
@@ -190,43 +168,39 @@
         });
       });
 
-      // Intentar reproducir video0 al cargar
+      let video1Ready = false;
+
+      video1.addEventListener("canplaythrough", () => {
+        video1Ready = true;
+      });
+
       window.addEventListener("load", () => {
         video0.play().catch(err => {
           console.warn("Autoplay bloqueado:", err);
-          fallback.style.display = "flex";
-          fallback.addEventListener("click", () => {
-            video0.play().then(() => {
-              fallback.style.display = "none";
-            }).catch(err => {
-              console.error("No se pudo reproducir tras clic en fallback:", err);
-            });
-          });
         });
       });
 
-      // Cuando termina el video0
       video0.addEventListener("ended", () => {
         video0.style.display = "none";
-        video1.currentTime = 0.001;
 
-        const playPromise = video1.play();
-        if (playPromise !== undefined) {
-          playPromise.then(() => {
-            setTimeout(() => {
-              video1.pause();
-              video1.currentTime = 0.001;
-            }, 100);
-          }).catch(err => {
-            console.warn("video1 no se pudo pre-cargar automáticamente:", err);
+        const startVideo1 = () => {
+          video1.muted = false;
+          video1.play().catch(err => {
+            console.warn("No se pudo reproducir video1:", err);
           });
-        }
-      });
+          audio.play();
+        };
 
-      video1.addEventListener("click", () => {
-        video1.muted = false;
-        video1.play();
-        audio.play();
+        if (video1Ready) {
+          startVideo1();
+        } else {
+          const checkReady = setInterval(() => {
+            if (video1Ready) {
+              clearInterval(checkReady);
+              startVideo1();
+            }
+          }, 100);
+        }
       });
 
       video1.addEventListener("ended", () => {
@@ -249,6 +223,5 @@
       document.addEventListener('contextmenu', e => e.preventDefault());
     }
   </script>
-
 </body>
 </html>
