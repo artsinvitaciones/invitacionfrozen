@@ -148,6 +148,7 @@
 
     const userAgent = navigator.userAgent.toLowerCase();
     const isXiaomiBrowser = /miuibrowser|miui|miwebview/.test(userAgent);
+    const isOpera = !!window.opera || userAgent.includes("opr/");
 
     if (isXiaomiBrowser) {
       unsupported.style.display = "flex";
@@ -167,6 +168,28 @@
           if (this.classList.contains("inactive-link")) e.preventDefault();
         });
       });
+
+      // Ajustes específicos para Opera
+      if (isOpera) {
+        console.log("Opera detectado — aplicando ajustes para autoplay");
+        video0.muted = true;
+        video0.autoplay = true;
+
+        window.addEventListener("load", () => {
+          video0.play().catch(err => {
+            console.warn("Autoplay bloqueado en Opera:", err);
+            const desbloquearAutoplay = () => {
+              video0.play().then(() => {
+                console.log("Video0 desbloqueado tras clic del usuario");
+              }).catch(err => {
+                console.error("No se pudo reproducir ni tras el clic:", err);
+              });
+              document.body.removeEventListener("click", desbloquearAutoplay);
+            };
+            document.body.addEventListener("click", desbloquearAutoplay);
+          });
+        });
+      }
 
       // Cuando termina el video0
       video0.addEventListener("ended", () => {
