@@ -209,10 +209,18 @@
       video0.addEventListener("ended", () => {
         video0.style.display = "none";
         video1.currentTime = 0.001;
-        video1.play().then(() => {
-          video1.pause();
-          video1.currentTime = 0.001;
-        });
+
+        const playPromise = video1.play();
+        if (playPromise !== undefined) {
+          playPromise.then(() => {
+            setTimeout(() => {
+              video1.pause();
+              video1.currentTime = 0.001;
+            }, 100);
+          }).catch(err => {
+            console.warn("video1 no se pudo pre-cargar automáticamente:", err);
+          });
+        }
       });
 
       video1.addEventListener("click", () => {
