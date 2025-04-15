@@ -85,18 +85,29 @@
       max-height: 100%;
     }
 
-    #manual-play-button {
-      position: absolute;
-      top: 50%;
-      left: 50%;
-      transform: translate(-50%, -50%);
-      background: white;
-      border: none;
-      padding: 15px 30px;
-      font-size: 18px;
-      cursor: pointer;
-      z-index: 5;
+    #manual-play-overlay {
+      position: fixed;
+      top: 0; left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0, 0, 0, 0.85);
+      color: white;
+      font-size: 22px;
+      font-weight: 300;
       display: none;
+      justify-content: center;
+      align-items: center;
+      text-align: center;
+      z-index: 999;
+      cursor: pointer;
+      padding: 20px;
+    }
+
+    #manual-play-overlay span {
+      background: rgba(255, 255, 255, 0.1);
+      padding: 20px 30px;
+      border-radius: 8px;
+      backdrop-filter: blur(4px);
     }
 
     @media (max-width: 480px) {
@@ -117,8 +128,10 @@
     <img src="assets/incompatible.png" alt="Navegador no compatible" />
   </div>
 
-  <!-- Botón manual de reproducción -->
-  <button id="manual-play-button">Iniciar</button>
+  <!-- Overlay elegante para reproducir -->
+  <div id="manual-play-overlay">
+    <span>Haz clic para comenzar la experiencia</span>
+  </div>
 
   <!-- Intro (video0) -->
   <video id="video0" autoplay playsinline muted preload="auto" controlsList="nodownload">
@@ -162,7 +175,7 @@
     const buttonsContainer = document.getElementById("buttons-container");
     const allLinks = document.querySelectorAll(".buttons-container a");
     const unsupported = document.getElementById("unsupported-browser");
-    const manualPlayButton = document.getElementById("manual-play-button");
+    const overlay = document.getElementById("manual-play-overlay");
 
     const userAgent = navigator.userAgent.toLowerCase();
     const isXiaomiBrowser = /miuibrowser|miui|miwebview/.test(userAgent);
@@ -187,23 +200,21 @@
         });
       });
 
-      // Botón manual si es Opera (después de 6s)
       if (isOpera) {
         setTimeout(() => {
-          manualPlayButton.style.display = "block";
+          overlay.style.display = "flex";
         }, 6000);
 
-        manualPlayButton.addEventListener("click", () => {
+        overlay.addEventListener("click", () => {
           video0.play();
-          manualPlayButton.style.display = "none";
+          overlay.style.display = "none";
         });
       }
 
-      // Cuando termina el video0
       video0.addEventListener("ended", () => {
         video0.style.display = "none";
         try {
-          video1.currentTime = 0.001; // forzar precarga sin reproducir
+          video1.currentTime = 0.001;
         } catch (e) {
           console.warn("No se pudo forzar precarga en video1:", e);
         }
