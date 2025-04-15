@@ -113,19 +113,25 @@
       display: flex;
       justify-content: center;
       align-items: center;
-      transition: opacity 0.8s ease;
-    }
-
-    #preloader.hidden {
-      opacity: 0;
-      visibility: hidden;
-      pointer-events: none;
+      flex-direction: column;
+      color: white;
+      font-size: 1.2rem;
     }
 
     #preloader video {
       width: 100%;
       height: 100%;
       object-fit: cover;
+      position: absolute;
+      top: 0;
+      left: 0;
+      z-index: -1;
+    }
+
+    #preloader.hidden {
+      opacity: 0;
+      visibility: hidden;
+      transition: opacity 0.8s ease;
     }
 
     @media (max-width: 480px) {
@@ -141,24 +147,25 @@
 </head>
 <body oncontextmenu="return false">
 
-  <!-- Preloader video pantalla completa -->
+  <!-- Preloader -->
   <div id="preloader">
     <video autoplay muted loop playsinline>
       <source src="assets/preloader.mp4" type="video/mp4" />
     </video>
+    <div>Cargando...</div>
   </div>
 
-  <!-- Imagen de navegador no compatible -->
+  <!-- Imagen navegador no compatible -->
   <div id="unsupported-browser">
     <img src="assets/incompatible.png" alt="Navegador no compatible" />
   </div>
 
   <!-- Video principal -->
-  <video id="video1" playsinline muted preload="auto" controlsList="nodownload">
+  <video id="video1" autoplay muted playsinline preload="auto" controlsList="nodownload">
     <source src="assets/video.mp4" type="video/mp4" />
   </video>
 
-  <!-- Segundo video oculto al inicio -->
+  <!-- Segundo video oculto -->
   <video id="video2" playsinline muted loop preload="auto" controlsList="nodownload">
     <source src="assets/video2.mp4" type="video/mp4" />
   </video>
@@ -182,6 +189,7 @@
     </div>
   </div>
 
+  <!-- JavaScript -->
   <script>
     const video1 = document.getElementById("video1");
     const video2 = document.getElementById("video2");
@@ -202,7 +210,6 @@
       buttonsContainer.style.display = "none";
       preloader.style.display = "none";
     } else {
-      // Deshabilita clics al inicio
       allLinks.forEach(link => {
         link.setAttribute("tabindex", "-1");
         link.style.pointerEvents = "none";
@@ -213,15 +220,37 @@
         });
       });
 
-      // Oculta el preloader cuando el video esté listo
-      video1.addEventListener("canplaythrough", () => {
+      // Función: esperar X milisegundos
+      function wait(ms) {
+        return new Promise(resolve => setTimeout(resolve, ms));
+      }
+
+      // Función: esperar que video esté listo o timeout
+      function waitForVideoReady(video, timeout = 4000) {
+        return new Promise(resolve => {
+          if (video.readyState >= 3) {
+            resolve();
+          } else {
+            const onReady = () => {
+              video.removeEventListener("canplaythrough", onReady);
+              resolve();
+            };
+            video.addEventListener("canplaythrough", onReady);
+            setTimeout(() => {
+              video.removeEventListener("canplaythrough", onReady);
+              resolve();
+            }, timeout);
+          }
+        });
+      }
+
+      // Preloader inteligente: espera mínimo 6s + carga de video
+      Promise.all([
+        wait(6000),
+        waitForVideoReady(video1, 4000)
+      ]).then(() => {
         preloader.classList.add("hidden");
       });
-
-      // Respaldo: oculta el preloader sí o sí después de 10 segundos
-      setTimeout(() => {
-        preloader.classList.add("hidden");
-      }, 10000);
 
       video1.addEventListener("click", () => {
         video1.muted = false;
