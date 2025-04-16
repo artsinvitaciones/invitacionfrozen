@@ -78,11 +78,11 @@
       display: none;
       justify-content: center;
       align-items: center;
-    }
-
-    #unsupported-browser img {
-      max-width: 100%;
-      max-height: 100%;
+      text-align: center;
+      padding: 20px;
+      font-size: 18px;
+      line-height: 1.6;
+      color: white;
     }
 
     #start-fallback {
@@ -118,7 +118,15 @@
 
   <!-- Navegador no compatible -->
   <div id="unsupported-browser">
-    <img src="assets/incompatible.png" alt="Navegador no compatible" />
+    <div>
+      <p>⚠️ Lo sentimos 😢</p>
+      <p>Tu navegador no es compatible con esta experiencia interactiva.</p>
+      <p>Por favor, usa uno de estos navegadores para verla correctamente:</p>
+      <ul style="list-style: none; padding: 0; margin-top: 10px;">
+        <li>🟢 Google Chrome</li>
+        <li>🟠 Mozilla Firefox</li>
+      </ul>
+    </div>
   </div>
 
   <!-- Fallback para autoplay bloqueado -->
@@ -250,9 +258,8 @@
         video1.style.display = "block";
         video1.style.opacity = 1;
         video1.currentTime = 0;
-        video1.muted = true; // Volver a mutear hasta que el usuario haga clic
+        video1.muted = true;
 
-        // No reproducimos automáticamente
         audio.pause();
         audio.currentTime = 0;
       });
