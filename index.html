@@ -246,14 +246,15 @@
 
         video2.pause();
         video2.style.opacity = 0;
+
         video1.style.display = "block";
         video1.style.opacity = 1;
         video1.currentTime = 0;
-        video1.muted = false;
-        video1.play();
+        video1.muted = true; // Volver a mutear hasta que el usuario haga clic
 
+        // No reproducimos automáticamente
+        audio.pause();
         audio.currentTime = 0;
-        audio.play();
       });
 
       document.addEventListener('contextmenu', e => e.preventDefault());
