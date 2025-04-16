@@ -156,6 +156,10 @@
         <img src="assets/botonasistencia.png" alt="asistencia" class="button-img" />
       </a>
     </div>
+    <!-- Botón Repetir -->
+    <div class="button-wrapper">
+      <img src="assets/repetir.png" alt="Repetir" class="button-img" id="repeat-button" />
+    </div>
   </div>
 
   <script>
@@ -167,6 +171,7 @@
     const allLinks = document.querySelectorAll(".buttons-container a");
     const unsupported = document.getElementById("unsupported-browser");
     const fallback = document.getElementById("start-fallback");
+    const repeatButton = document.getElementById("repeat-button");
 
     const userAgent = navigator.userAgent.toLowerCase();
     const isXiaomiBrowser = /miuibrowser|miui|miwebview/.test(userAgent);
@@ -204,7 +209,6 @@
         });
       });
 
-      // ✅ Aquí solo ocultamos video0, no tocamos video1 aún
       video0.addEventListener("ended", () => {
         video0.style.display = "none";
       });
@@ -230,6 +234,26 @@
             });
           }, 1000);
         }).catch(err => console.error("Error al reproducir video2:", err));
+      });
+
+      repeatButton.addEventListener("click", () => {
+        buttonsContainer.classList.remove("enabled");
+        allLinks.forEach(link => {
+          link.classList.add("inactive-link");
+          link.setAttribute("tabindex", "-1");
+          link.style.pointerEvents = "none";
+        });
+
+        video2.pause();
+        video2.style.opacity = 0;
+        video1.style.display = "block";
+        video1.style.opacity = 1;
+        video1.currentTime = 0;
+        video1.muted = false;
+        video1.play();
+
+        audio.currentTime = 0;
+        audio.play();
       });
 
       document.addEventListener('contextmenu', e => e.preventDefault());
