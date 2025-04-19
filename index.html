@@ -192,7 +192,7 @@
       audio.remove();
       buttonsContainer.style.display = "none";
     } else {
-      video1.load();
+      video1.load(); // 👈 Solución parte 1: fuerza carga
       video2.load();
 
       allLinks.forEach(link => {
@@ -221,10 +221,19 @@
         video0.style.display = "none";
       });
 
-      video1.addEventListener("click", () => {
-        video1.muted = false;
-        video1.play();
-        audio.play();
+      // 👇 Solución parte 2: click solo cuando esté listo
+      video1.addEventListener("click", function playVideo1() {
+        if (video1.readyState >= 3) {
+          video1.muted = false;
+          video1.play();
+          audio.play();
+        } else {
+          video1.addEventListener("canplaythrough", () => {
+            video1.muted = false;
+            video1.play();
+            audio.play();
+          }, { once: true });
+        }
       });
 
       video1.addEventListener("ended", () => {
